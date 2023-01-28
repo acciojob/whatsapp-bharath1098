@@ -13,7 +13,7 @@ public class WhatsappRepository {
     private HashMap<Group, List<Message>> groupMessageMap;
     private HashMap<Message, User> senderMap;
     private HashMap<Group, User> adminMap;
-    private HashMap<String, User> userHashMap = new HashMap<>();
+    private HashMap<String, User> userHashMap;
     private HashSet<String> userMobile;
     private int customGroupCount;
     private int messageId;
@@ -24,11 +24,15 @@ public class WhatsappRepository {
         this.senderMap = new HashMap<Message, User>();
         this.adminMap = new HashMap<Group, User>();
         this.userMobile = new HashSet<>();
+        this.userHashMap = new HashMap<>();
         this.customGroupCount = 0;
         this.messageId = 0;
     }
 
-
+    public boolean isNewUser(String mobile) {
+        if (userHashMap.containsKey(mobile)) return false;
+        return true;
+    }
     public String createUser(String name, String mobile) throws Exception {
         if(!this.isNewUser(mobile)) {
             throw new Exception("User already exists");
@@ -37,10 +41,7 @@ public class WhatsappRepository {
         return "SUCCESS";
     }
 
-    public boolean isNewUser(String mobile) {
-        if (userHashMap.containsKey(mobile)) return false;
-        return true;
-    }
+
 
     public Group createGroup(List<User> users) {
         // The list contains at least 2 users where the first user is the admin. A group has exactly one admin.
@@ -75,7 +76,6 @@ public class WhatsappRepository {
         // The 'i^th' created message has message id 'i'.
         // Return the message id.
         this.messageId++;
-        Date d = new Date();
         Message message = new Message(messageId, content,new Date());
         return this.messageId;
     }
@@ -88,11 +88,11 @@ public class WhatsappRepository {
         if (!this.userExistsInGroup(group, sender)) throw new Exception("You are not allowed to send message");
 
         List<Message> messages = new ArrayList<>();
-        if (groupMessageMap.containsKey(group)) {
-            messages = groupMessageMap.get(group);
-        }
+        if (groupMessageMap.containsKey(group)) messages = groupMessageMap.get(group);
+
         messages.add(message);
         groupMessageMap.put(group, messages);
+        senderMap.put(message,sender);
         return messages.size();
     }
 
@@ -106,10 +106,6 @@ public class WhatsappRepository {
     }
 
     public String changeAdmin(User approver, User user, Group group) throws Exception {
-        //Throw "Group does not exist" if the mentioned group does not exist
-        //Throw "Approver does not have rights" if the approver is not the current admin of the group
-        //Throw "User is not a participant" if the user is not a part of the group
-        //Change the admin of the group to "user" and return "SUCCESS". Note that at one time there is only one admin and the admin rights are transferred from approver to user.
 
         if (!groupUserMap.containsKey(group)) throw new Exception("Group does not exist");
         if (!adminMap.get(group).equals(approver)) throw new Exception("Approver does not have rights");
