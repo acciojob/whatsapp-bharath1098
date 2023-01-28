@@ -14,9 +14,11 @@ public class WhatsappService {
     WhatsappRepository whatsappRepository = new WhatsappRepository();
 
     public String createUser(String name, String mobile) throws Exception {
-
-       return whatsappRepository.createUser(name, mobile);
-
+        whatsappRepository.createUser(name, mobile);
+        return "SUCCESS";
+    }
+    public boolean isNewUser(String mobile) {
+        return whatsappRepository.isNewUser(mobile);
     }
 
     public Group createGroup(List<User> users) {
